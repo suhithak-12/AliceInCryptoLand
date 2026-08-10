@@ -1,422 +1,260 @@
-# 🔐 Alice in CryptoLand — Attribute-Based Encrypted Messenger
+# ABE Messenger - Setup and Running Instructions
 
-Alice in CryptoLand is a prototype secure messaging application that demonstrates **attribute-based access control for encrypted messages**.
+## Overview
+This is a secure messaging application that uses Attribute-Based Encryption (ABE) to control access to messages. Only users with matching attributes can decrypt and read encrypted messages.
 
-Instead of giving every member of a chat access to every encrypted message, a sender can specify required attributes such as `Admin`, `Manager`, or `Developer`. Only users whose assigned attributes satisfy the message requirements are allowed to decrypt it.
-
-The project combines a **Flask REST API**, a browser-based JavaScript frontend, and **AES-GCM encryption using the Web Crypto API**.
-
-> **Note:** This project is an educational prototype. Its attribute-based encryption model demonstrates the concept of Attribute-Based Encryption (ABE), but it is **not a production cryptographic ABE implementation**.
-
----
-
-## ✨ Features
-
-* Create and join chat rooms
-* Request approval before entering a chat
-* Chat creators act as a **Trusted Authority**
-* Assign attributes to individual users
-* Update user attributes at any time
-* Send normal plaintext messages
-* Send encrypted messages protected by required attributes
-* AES-GCM encryption performed in the browser
-* SHA-256-based key derivation from selected attributes
-* Users without the required attributes see a locked-message indicator
-* Automatic message refreshing
-* Simple REST API built with Flask
-* Multi-user testing through separate browser sessions
-
----
-
-## 🔑 How Attribute-Based Access Works
-
-Each user in a chat can be assigned attributes.
-
-For example:
-
-```text
-Alice
-├── Admin
-└── Developer
-
-Bob
-├── Manager
-└── Developer
-
-Charlie
-└── Member
+## Project Structure
+```
+abe-messenger/
+├── app.py              # Flask backend server
+├── index.html          # Frontend HTML/CSS
+├── app.js              # Frontend JavaScript with ABE logic
+└── README.md           # This file
 ```
 
-A sender can then protect a message using one or more required attributes.
+## Prerequisites
 
-For example:
+### Required Software
+1. **Python 3.8+** - Download from [python.org](https://www.python.org/downloads/)
+2. **pip** - Python package installer (included with Python)
+3. **A modern web browser** - Chrome, Firefox, Safari, or Edge
 
-```text
-Required attributes:
-Manager + Developer
-```
-
-Bob satisfies both requirements and can decrypt the message.
-
-Alice has `Developer` but not `Manager`, so she cannot access it.
-
-Charlie has neither required attribute and cannot access it.
-
-The application therefore follows an **ALL-required-attributes policy**.
-
----
-
-## 🔐 Encryption
-
-Encrypted messages are handled client-side in `app.js`.
-
-The application:
-
-1. Takes the selected required attributes.
-2. Sorts and combines the attributes.
-3. Hashes them using **SHA-256**.
-4. Imports the resulting value as an **AES-GCM key**.
-5. Generates a random 12-byte initialization vector.
-6. Encrypts the message using the browser's Web Crypto API.
-7. Stores the ciphertext, IV, and required attributes.
-
-Before attempting decryption, the client checks whether the current user possesses every required attribute.
-
-### Important Security Notice
-
-This is a demonstration of attribute-based **access control**, not a cryptographically complete CP-ABE or KP-ABE system.
-
-Because encryption keys are deterministically derived from attribute names, this implementation should **not be used to protect real sensitive information**.
-
-A production implementation would require proper cryptographic key generation, authentication, secure key distribution, persistent storage, and a real ABE construction.
-
----
-
-## 🛠 Tech Stack
-
-**Backend**
-
-* Python
-* Flask
-* Flask-CORS
-
-**Frontend**
-
-* HTML
-* CSS
-* Vanilla JavaScript
-* Fetch API
-
-**Cryptography**
-
-* Web Crypto API
-* AES-GCM
-* SHA-256
-
-**Storage**
-
-* Python in-memory dictionaries
-
-No database is currently required.
-
----
-
-## 📁 Project Structure
-
-```text
-AliceInCryptoLand/
-│
-├── app.py
-│   └── Flask backend and REST API
-│
-├── index.html
-│   └── Application interface and styling
-│
-├── app.js
-│   └── Frontend logic, API communication,
-│       attribute checks, and encryption
-│
-├── image.png
-│
-├── DemoPictures/
-│   └── Application screenshots
-│
-└── README.md
-```
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-Make sure you have:
-
-* Python 3.8+
-* pip
-* A modern browser such as Chrome, Firefox, Edge, or Safari
-
-Clone the repository:
-
-```bash
-git clone <your-repository-url>
-cd AliceInCryptoLand
-```
-
-Install the required Python packages:
-
+### Required Python Packages
 ```bash
 pip install flask flask-cors
 ```
 
----
+## Installation Steps
 
-## ▶️ Running the Application
+### Step 1: Create Project Directory
+```bash
+mkdir abe-messenger
+cd abe-messenger
+```
 
-Start the Flask backend:
+### Step 2: Save the Files
+Save the three files in your project directory:
+- `app.py` - The Flask server
+- `index.html` - The frontend interface
+- `app.js` - The frontend JavaScript logic
 
+### Step 3: Install Dependencies
+```bash
+pip install flask flask-cors
+```
+
+## Running the Application
+
+### Step 1: Start the Flask Server
+Open a terminal in your project directory and run:
 ```bash
 python app.py
 ```
 
-The API will run on:
-
-```text
-http://localhost:5000
+You should see output like:
+```
+ * Serving Flask app 'app'
+ * Debug mode: on
+ * Running on http://127.0.0.1:5000
 ```
 
-The Flask application listens on `0.0.0.0`, which also allows testing from other devices on the same network when configured appropriately.
+**Keep this terminal window open** - this is your server running.
 
-Next, serve the frontend from the project directory:
-
+**Important:** If you get CORS errors, you may need to serve the HTML file through a simple HTTP server:
 ```bash
+# Python 3
 python -m http.server 8000
+
+# Then open: http://localhost:8000
 ```
 
-Then open:
+### Step 3: Test with Multiple Users
+To simulate multiple users:
+1. Open the application in different browser windows or use incognito/private browsing modes
+2. Register different users with different email addresses
+3. Create a chat room with one user
+4. Join the chat with another user
+5. Test the ABE encryption functionality
 
-```text
-http://localhost:8000
+## How to Use the Application
+
+### 1. Login/Register
+- Enter your email and name
+- Click "Login"
+- The system will create an account or log you in if you already exist
+
+### 2. Create a Chat Room
+- Click "Create Chat" button in the sidebar
+- Enter a chat name
+- Click "Create"
+- You are now the **Trusted Authority** for this chat
+
+### 3. Join a Chat Room
+- Click "Join Chat" button in the sidebar
+- Select an available chat from the dropdown
+- Click "Request to Join"
+- Wait for the chat creator to approve you
+
+### 4. Approve Users (as Creator)
+- In your chat, click "Manage Users"
+- View pending join requests
+- Click "Approve" and assign attributes (e.g., "Manager, Developer")
+- Users can now access the chat
+
+### 5. Send Messages
+
+**Unencrypted Messages:**
+- Type your message
+- Click "Send"
+- Everyone in the chat can read it
+
+**Encrypted Messages (ABE):**
+- Type your message
+- Check the "Encrypt with ABE" checkbox
+- Select the required attributes by clicking on them (they turn green)
+- Click "Send"
+- Only users with ALL selected attributes can decrypt and read the message
+
+### 6. Manage User Attributes (as Creator)
+- Click "Manage Users"
+- In the "Current Users" section, click "Edit" next to a user
+- Enter new attributes (comma-separated)
+- The user's access rights are updated immediately
+
+## Key Features
+
+### Attribute-Based Encryption
+- Messages can be encrypted with specific attribute requirements
+- Only users possessing ALL required attributes can decrypt messages
+- Uses a simple Caesar cipher implementation (for demonstration)
+- In production, replace with a proper ABE library
+
+### Trusted Authority System
+- Chat creators are Trusted Authorities
+- They approve new users and assign attributes
+- They can modify user attributes at any time
+
+### Automatic Refresh
+- Messages refresh every 60 seconds automatically
+- Keeps all users synchronized
+
+### Security Features
+- Encrypted messages cannot be read without proper attributes
+- Users see a locked message indicator if they lack access
+- Prevents spoofing through attribute verification
+
+## Testing Scenarios
+
+### Scenario 1: Basic Encrypted Chat
+1. Create a chat as User A
+2. User B requests to join
+3. User A approves User B with "Manager" attribute
+4. User A sends a message encrypted for "Manager"
+5. User B can read it
+6. User A sends a message encrypted for "Admin"
+7. User B sees it as locked (needs Admin attribute)
+
+### Scenario 2: Multiple Attributes
+1. Assign User B attributes: "Manager, Developer"
+2. Send a message requiring "Manager, Developer"
+3. User B can read it
+4. Send a message requiring "Manager, Admin"
+5. User B cannot read it (missing Admin)
+
+### Scenario 3: Attribute Updates
+1. Remove "Manager" from User B's attributes
+2. User B can no longer decrypt messages requiring "Manager"
+3. Previously sent encrypted messages become unreadable
+
+## Troubleshooting
+
+### Server Won't Start
+**Error:** `Address already in use`
+**Solution:** Change the port in `app.py`:
+```python
+app.run(debug=True, port=5001)  # Use different port
 ```
+Then update `API_BASE` in `app.js` to match.
 
-in your browser.
+### CORS Errors
+**Error:** `Access to fetch has been blocked by CORS policy`
+**Solution:** Ensure `flask-cors` is installed and the server is running. Or serve HTML via HTTP server.
 
----
+### Messages Not Refreshing
+**Check:**
+- Is the Flask server running?
+- Open browser console (F12) - any errors?
+- Check network requests in the browser dev tools
 
-## 💬 Using the Application
+### Can't Decrypt Messages
+**Check:**
+- Do you have ALL required attributes?
+- Click "Info" to see your current attributes
+- Contact the chat creator to update your attributes
 
-### 1. Log In
+## Production Considerations
 
-Enter your:
+### Security Improvements Needed
+1. **Real ABE Implementation:** Replace the Caesar cipher with a proper ABE library like [Charm-Crypto](https://github.com/JHUISI/charm)
+2. **Authentication:** Implement OAuth2 with Google as planned
+3. **Database:** Replace in-memory storage with PostgreSQL or MongoDB
+4. **HTTPS:** Use TLS/SSL certificates for encrypted communication
+5. **Key Management:** Implement proper key generation and distribution
+6. **Session Management:** Add JWT tokens for secure authentication
 
-* Name
-* Email address
+### Scalability Improvements
+1. **WebSockets:** Use Socket.IO for real-time messaging instead of polling
+2. **Redis:** Add Redis for session storage and caching
+3. **Load Balancing:** Deploy behind Nginx or similar
+4. **Cloud Hosting:** Deploy to AWS, Google Cloud, or Heroku
 
-The prototype automatically creates a user if the email has not previously been registered.
+### Additional Features to Implement
+- File sharing with ABE encryption
+- Message editing and deletion
+- User profiles and avatars
+- Read receipts
+- Typing indicators
+- Push notifications
+- Message search
+- Export chat history
 
----
+## Support and Documentation
 
-### 2. Create a Chat
+### Project Documentation
+Refer to the project proposal document for:
+- Detailed architecture
+- Risk management strategy
+- Project timeline
+- Team roles and responsibilities
 
-Select **Create Chat** and enter a chat name.
+### Common Attributes Examples
+- **Admin** - Full access, administrative privileges
+- **Manager** - Management-level information
+- **Developer** - Technical/development content
+- **HR** - Human resources information
+- **Member** - General membership
+- **Guest** - Limited access
 
-The creator automatically becomes the chat's **Trusted Authority** and receives:
+### API Endpoints
+- `POST /api/register` - Register/login user
+- `POST /api/sessions/create` - Create chat room
+- `POST /api/sessions/join` - Request to join chat
+- `POST /api/sessions/<id>/approve` - Approve user (creator only)
+- `POST /api/sessions/<id>/attributes` - Update attributes (creator only)
+- `POST /api/sessions/<id>/messages` - Send message
+- `GET /api/sessions/<id>/messages` - Get messages
+- `GET /api/sessions/<id>/info` - Get session info
+- `GET /api/users/<id>/sessions` - Get user's sessions
+- `GET /api/sessions/list` - List all sessions
 
-```text
-Admin
-Creator
-```
+## License
+Educational project for CS/IT5041 - Cryptography course.
 
-attributes.
-
----
-
-### 3. Join a Chat
-
-Another user can:
-
-1. Select **Join Chat**
-2. Choose an available chat
-3. Send a join request
-4. Wait for approval from the creator
-
----
-
-### 4. Approve Users
-
-The chat creator can open **Manage Users** and review pending requests.
-
-When approving a user, the creator can assign attributes such as:
-
-```text
-Admin
-Manager
-Developer
-Member
-Guest
-```
-
-Custom comma-separated attributes can also be assigned.
-
----
-
-### 5. Send an Encrypted Message
-
-Enter a message and enable encryption.
-
-Select the attributes required to access the message.
-
-For example:
-
-```text
-☑ Manager
-☑ Developer
-```
-
-The application encrypts the message before sending it to the Flask server.
-
-A recipient must possess **both** attributes to decrypt it.
-
----
-
-## 🧪 Example Test
-
-Create three users:
-
-```text
-Alice → Admin, Developer
-Bob   → Manager, Developer
-Eve   → Member
-```
-
-Send:
-
-```text
-"Production deployment begins tonight."
-```
-
-with:
-
-```text
-Required attributes: Manager + Developer
-```
-
-### Result
-
-| User  | Access       |
-| ----- | ------------ |
-| Alice | 🔒 Locked    |
-| Bob   | 🔓 Decrypted |
-| Eve   | 🔒 Locked    |
-
-Bob is the only user who possesses every required attribute.
+## Team
+- Benjamin Mannal
+- Suhitha Kantareddy
+- Tristan Coull
 
 ---
 
-## 🌐 API Endpoints
-
-| Method | Endpoint                        | Description                  |
-| ------ | ------------------------------- | ---------------------------- |
-| `POST` | `/api/register`                 | Register or retrieve a user  |
-| `POST` | `/api/sessions/create`          | Create a chat session        |
-| `POST` | `/api/sessions/join`            | Request to join a session    |
-| `POST` | `/api/sessions/<id>/approve`    | Approve a pending user       |
-| `POST` | `/api/sessions/<id>/attributes` | Update user attributes       |
-| `POST` | `/api/sessions/<id>/messages`   | Send a message               |
-| `GET`  | `/api/sessions/<id>/messages`   | Retrieve messages            |
-| `GET`  | `/api/sessions/<id>/info`       | Retrieve session information |
-| `GET`  | `/api/users/<id>/sessions`      | Retrieve a user's sessions   |
-| `GET`  | `/api/sessions/list`            | List available sessions      |
-
----
-
-## 🧪 Testing Multiple Users
-
-Because the backend stores users and sessions in memory, the easiest way to test the access-control system is with multiple browser contexts.
-
-For example:
-
-```text
-Normal Chrome window → Alice
-Incognito window     → Bob
-Firefox              → Eve
-```
-
-Create a chat with Alice, request access using Bob and Eve, and assign each user different attributes.
-
-You can then send encrypted messages with different policies and verify which users can decrypt them.
-
----
-
-## ⚠️ Current Limitations
-
-This project is intended as a prototype and currently has several limitations:
-
-* User and message data is stored only in memory
-* Restarting the Flask server deletes all application data
-* Authentication is minimal
-* There is no persistent database
-* There is no production session management
-* Messages are retrieved through polling rather than WebSockets
-* Attribute names are used to derive encryption keys
-* The implementation is not true cryptographic Attribute-Based Encryption
-* The Flask development server runs with debug mode enabled
-
----
-
-## 🔮 Possible Improvements
-
-Future versions could include:
-
-* True CP-ABE or KP-ABE cryptography
-* Secure user authentication
-* OAuth2
-* PostgreSQL or MongoDB persistence
-* Cryptographically secure key distribution
-* JWT/session authentication
-* WebSocket-based real-time messaging
-* File encryption and sharing
-* Message deletion and editing
-* User profiles
-* Read receipts
-* Typing indicators
-* Push notifications
-* Searchable chat history
-* HTTPS deployment
-* Docker support
-
----
-
-## 🎓 Educational Purpose
-
-Alice in CryptoLand was created as an educational cryptography project to explore how **attributes and access policies can control access to encrypted information**.
-
-The project demonstrates the basic idea behind Attribute-Based Encryption:
-
-> Access to encrypted information can depend on **what attributes a user possesses**, rather than simply who the user is.
-
-This prototype translates that concept into a familiar chat application where permissions can be changed and their effects observed immediately.
-
----
-
-## 👥 Team
-
-* Benjamin Mannal
-* Suhitha Kantareddy
-* Tristan Coull
-
----
-
-## 📄 License
-
-Created as an educational project for **CS/IT5041 — Cryptography**.
-
-Unless a separate license file is added to the repository, the project should be considered educational/coursework code rather than licensed for unrestricted redistribution.
-
----
-
-## ⚠️ Disclaimer
-
-This application is a **proof-of-concept educational project** and should not be used to transmit or store sensitive, confidential, or production data.
-
-For real-world applications, use established cryptographic libraries, proper authentication, secure key-management infrastructure, persistent storage, HTTPS, and independently reviewed security protocols.
+**Note:** This is a prototype implementation for educational purposes. For production use, implement proper ABE libraries, secure authentication, and database persistence.

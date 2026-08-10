@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABE Messenger</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #36393f;
+            color: #dcddde;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background-color: #2f3136;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            background-color: #202225;
+            border-bottom: 1px solid #1e1f22;
+        }
+
+        .sidebar-header h2 {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .user-info {
+            font-size: 12px;
+            color: #b9bbbe;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            padding: 8px 12px;
+            background-color: #5865f2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 5px;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background-color: #4752c4;
+        }
+
+        .btn-secondary {
+            background-color: #4e5058;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5d5f69;
+        }
+
+        .sessions-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .session-item {
+            padding: 10px;
+            margin: 5px 0;
+            background-color: #36393f;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .session-item:hover {
+            background-color: #3c3f45;
+        }
+
+        .session-item.active {
+            background-color: #5865f2;
+        }
+
+        .session-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .session-info {
+            font-size: 11px;
+            color: #b9bbbe;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #36393f;
+        }
+
+        .chat-header {
+            padding: 15px 20px;
+            background-color: #2f3136;
+            border-bottom: 1px solid #1e1f22;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .chat-actions button {
+            margin-left: 10px;
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .message-author {
+            font-weight: 600;
+            color: #5865f2;
+            margin-right: 10px;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: #72767d;
+        }
+
+        .message-content {
+            color: #dcddde;
+            word-wrap: break-word;
+        }
+
+        .message-encrypted {
+            background-color: #2f3136;
+            border-left: 3px solid #faa61a;
+        }
+
+        .message-encrypted .encryption-info {
+            font-size: 11px;
+            color: #faa61a;
+            margin-top: 5px;
+        }
+
+        .message-locked {
+            background-color: #2f3136;
+            border-left: 3px solid #ed4245;
+        }
+
+        .message-locked .message-content {
+            color: #72767d;
+            font-style: italic;
+        }
+
+        /* Message Input */
+        .message-input-container {
+            padding: 20px;
+            background-color: #36393f;
+        }
+
+        .message-input-wrapper {
+            background-color: #40444b;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .message-input {
+            width: 100%;
+            background-color: transparent;
+            border: none;
+            color: #dcddde;
+            font-size: 14px;
+            outline: none;
+            resize: none;
+            min-height: 40px;
+            max-height: 120px;
+        }
+
+        .message-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .encryption-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .encryption-toggle label {
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .encryption-toggle input[type="checkbox"] {
+            cursor: pointer;
+        }
+
+        .attribute-selector {
+            margin-top: 10px;
+            display: none;
+        }
+
+        .attribute-selector.active {
+            display: block;
+        }
+
+        .attribute-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 5px;
+        }
+
+        .attribute-chip {
+            padding: 4px 8px;
+            background-color: #5865f2;
+            border-radius: 12px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .attribute-chip.selected {
+            background-color: #3ba55c;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: #2f3136;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #b9bbbe;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            background-color: #40444b;
+            border: 1px solid #1e1f22;
+            border-radius: 4px;
+            color: #dcddde;
+            font-size: 14px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .pending-requests {
+            margin-top: 20px;
+        }
+
+        .request-item {
+            background-color: #40444b;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .request-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            color: #72767d;
+        }
+
+        .welcome-screen h2 {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>ABE Messenger</h2>
+                <div id="userInfoDisplay" class="user-info"></div>
+                <button class="btn" onclick="showCreateSession()">Create Chat</button>
+                <button class="btn btn-secondary" onclick="showJoinSession()">Join Chat</button>
+            </div>
+            <div class="sessions-list" id="sessionsList">
+                <!-- Sessions will be dynamically loaded here -->
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div id="welcomeScreen" class="welcome-screen">
+                <h2>Welcome to ABE Messenger</h2>
+                <p>Select or create a chat to get started</p>
+            </div>
+
+            <div id="chatArea" class="hidden">
+                <div class="chat-header">
+                    <div class="chat-title" id="chatTitle">Chat Room</div>
+                    <div class="chat-actions">
+                        <button class="btn btn-small" onclick="showSessionInfo()">Info</button>
+                        <button class="btn btn-small btn-secondary" onclick="showManageUsers()" id="manageUsersBtn" style="display: none;">Manage Users</button>
+                    </div>
+                </div>
+
+                <div class="messages-container" id="messagesContainer">
+                    <!-- Messages will be dynamically loaded here -->
+                </div>
+
+                <div class="message-input-container">
+                    <div class="message-input-wrapper">
+                        <textarea id="messageInput" class="message-input" placeholder="Type a message..."></textarea>
+                        <div class="message-controls">
+                            <div class="encryption-toggle">
+                                <input type="checkbox" id="encryptToggle" onchange="toggleEncryption()">
+                                <label for="encryptToggle">Encrypt with ABE</label>
+                            </div>
+                            <button class="btn" onclick="sendMessage()">Send</button>
+                        </div>
+                        <div id="attributeSelector" class="attribute-selector">
+                            <label style="font-size: 12px;">Required Attributes:</label>
+                            <div id="attributeChips" class="attribute-chips"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal active">
+        <div class="modal-content">
+            <h2>Login to ABE Messenger</h2>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="loginEmail" placeholder="your.email@gmail.com">
+            </div>
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" id="loginName" placeholder="Your Name">
+            </div>
+            <div class="modal-actions">
+                <button class="btn" onclick="login()">Login</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Session Modal -->
+    <div id="createSessionModal" class="modal">
+        <div class="modal-content">
+            <h2>Create New Chat</h2>
+            <div class="form-group">
+                <label>Chat Name</label>
+                <input type="text" id="sessionName" placeholder="My Secure Chat">
+            </div>
+            <div class="modal-actions">
+                <button class="btn" onclick="createSession()">Create</button>
+                <button class="btn btn-secondary" onclick="hideModal('createSessionModal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Join Session Modal -->
+    <div id="joinSessionModal" class="modal">
+        <div class="modal-content">
+            <h2>Join Chat</h2>
+            <div class="form-group">
+                <label>Available Chats</label>
+                <select id="availableSessions">
+                    <option value="">Select a chat...</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button class="btn" onclick="joinSession()">Request to Join</button>
+                <button class="btn btn-secondary" onclick="hideModal('joinSessionModal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manage Users Modal -->
+    <div id="manageUsersModal" class="modal">
+        <div class="modal-content">
+            <h2>Manage Users</h2>
+            <div id="pendingRequests" class="pending-requests">
+                <h3>Pending Requests</h3>
+                <div id="requestsList"></div>
+            </div>
+            <div class="pending-requests">
+                <h3>Current Users</h3>
+                <div id="currentUsersList"></div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="hideModal('manageUsersModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Session Info Modal -->
+    <div id="sessionInfoModal" class="modal">
+        <div class="modal-content">
+            <h2>Chat Information</h2>
+            <div id="sessionInfoContent"></div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="hideModal('sessionInfoModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
